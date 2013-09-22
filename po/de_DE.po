@@ -1,0 +1,52 @@
+# VDR plugin language source file.
+# Copyright (C) 2013
+# This file is distributed under the same license as the PACKAGE package.
+#
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: vdr-hddarchive 0.0.1\n"
+"Report-Msgid-Bugs-To: <see README>\n"
+"POT-Creation-Date: 2013-09-21 16:09+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Thomas Maass <mase@setho.org>\n"
+"Language-Team: \n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "HDD-Archive"
+msgstr "HDD-Archiv"
+
+msgid "Button$Open"
+msgstr "Öffnen"
+
+msgid "Button$Play"
+msgstr "Wiedergabe"
+
+msgid "Button$Rewind"
+msgstr "Anfang"
+
+msgid "Button$Archive"
+msgstr "Archiv"
+
+msgid "Button$Info"
+msgstr "Info"
+
+#, c-format
+msgid "Please attach archive-hdd %s"
+msgstr "Bitte Archiv-HDD %s anschliessen"
+
+msgid "Could not mount archive-hdd!"
+msgstr "Konnte Archiv-HDD nicht mounten!"
+
+msgid "Recording not found!"
+msgstr "Aufnahme nicht gefunden!"
+
+msgid "Archive device"
+msgstr "Archiv Gerät"
+
+msgid "Archive mountpoint"
+msgstr "Archiv Mountpunkt"
