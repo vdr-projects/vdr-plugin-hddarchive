@@ -2,14 +2,14 @@ This is a "plugin" for the Video Disk Recorder (VDR).
 
 Written by:                  Thomas Maass <mase@setho.org>
 
-Project's homepage:          URL
+Project's homepage:          http://projects.vdr-developer.org/projects/plg-hddarchive
 
-Latest version available at: URL
+Latest version available at: http://projects.vdr-developer.org/projects/plg-hddarchive
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
+any later version.
 See the file COPYING for more information.
 
 Requirements
@@ -19,3 +19,23 @@ Requirements
 
 Description:
 This plugin brings the archive-hdd functionality to VDR.
+Install and start it like any other plugin.
+The optional patch for VDR integrates the archive functionalities into
+its original recordings menu.
+There is also a patch for Skinnopacity to display an archive symbol.
+The symbol isn't part of this patch. Just use an 48x48px image from your
+desktop environment and copy it to skinnopacity/icons/skinIcons/archive.png.
+
+The script vdr_move_to_hdd.sh can be used with the reccmds.conf to archive
+a recording. Change the mountpoint inside and use it with vdr-bg.sh or at:
+
+Archive?: /usr/local/bin/vdr-bg.sh /usr/local/bin/vdr_move_to_hdd.sh
+
+Make sure, that the vdr user has permissions to mount the archive-disk. Setup
+/etc/fstab like this:
+
+/dev/sdb1 /media/archive-hdd auto defaults,user,noauto 0 0
+
+To create an archive-disk, just format it and create a text file named "hdd"
+in its root. Write the archive-id in this file (8 characters max. ). This
+id is used to identify the archive-disk, so choose a unique one.
