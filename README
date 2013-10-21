@@ -12,19 +12,29 @@ the Free Software Foundation; either version 2 of the License, or
 any later version.
 See the file COPYING for more information.
 
+
+
 Requirements
 - VDR version >= 2.1.2
 
 - Optional patch to integrate into VDRs original recmenu
 
+
+
 Description:
 This plugin brings the archive-hdd functionality to VDR.
+
+
+
+Installation:
 Install and start it like any other plugin.
+Setup the archive device and archive mountpoint in the plugin settings.
 The optional patch for VDR integrates the archive functionalities into
 its original recordings menu.
 There is also a patch for Skinnopacity to display an archive symbol.
-The symbol isn't part of this patch. Just use an 48x48px image from your
-desktop environment and copy it to skinnopacity/icons/skinIcons/archive.png.
+The symbol isn't part of this patch. Use any 48x48px image. I used an
+hdd symbol from my desktop environment. Copy it to
+skinnopacity/icons/skinIcons/archive.png.
 
 The script vdr_move_to_hdd.sh can be used with the reccmds.conf to archive
 a recording. Change the mountpoint inside and use it with vdr-bg.sh or at:
@@ -32,10 +42,54 @@ a recording. Change the mountpoint inside and use it with vdr-bg.sh or at:
 Archive?: /usr/local/bin/vdr-bg.sh /usr/local/bin/vdr_move_to_hdd.sh
 
 Make sure, that the vdr user has permissions to mount the archive-disk. Setup
-/etc/fstab like this:
+/etc/fstab like this. The mountpoint must match with the plugin setup.
 
 /dev/sdb1 /media/archive-hdd auto defaults,user,noauto 0 0
 
 To create an archive-disk, just format it and create a text file named "hdd"
 in its root. Write the archive-id in this file (8 characters max. ). This
 id is used to identify the archive-disk, so choose a unique one.
+
+After archiving, the recording can be moved or renamed without problems. It is
+identified by the .rec directory. The cutmark "%" is removed on the archivedisk.
+
+
+
+Plugin services:
+Other plugins, especially skins can use plugin services identify an recording
+as archive, or play an recording:
+
+Identify an archive:
+
+struct Hddarchive_archiveid_v1_0
+{
+   const cRecording *recording;
+   bool isarchive;
+   const char *archiveid;
+};
+
+cPlugin *hddarchivePlugin = cPluginManager::GetPlugin("hddarchive");
+Hddarchive_archiveid_v1_0 data;
+data.recording = Recording;
+data.isarchive = false;
+if (hddarchivePlugin) {
+   hddarchivePlugin->Service("Hddarchive-archiveid_v1.0", &data);
+}
+if (data.isarchive) {
+   //Recording is an archive
+}
+
+
+Play an recording:
+
+struct Hddarchive_play_v1_0
+{
+   const cRecording *recording;
+};
+
+cPlugin *hddarchivePlugin = cPluginManager::GetPlugin("hddarchive");
+Hddarchive_play_v1_0 data;
+data.recording = Recording;
+if (hddarchivePlugin) {
+   hddarchivePlugin->Service("Hddarchive-play_v1.0", &data);
+}
