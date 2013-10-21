@@ -8,7 +8,7 @@
 
 #include "mymenu.h"
 
-// --- cMyMenuRecordings --------------------------------------------------
+// --- cMyMenuRecordings -------------------------------------------------------
 
 cMyMenuRecordings::cMyMenuRecordings(const char *Base, int Level, bool OpenSubMenus, bool Show)
 : cOsdMenu(Base ? Base : tr("HDD-Archive"), 9, 6, 6), show(Show)
@@ -16,7 +16,6 @@ cMyMenuRecordings::cMyMenuRecordings(const char *Base, int Level, bool OpenSubMe
    SetMenuCategory(mcRecording);
    base = Base ? strdup(Base) : NULL;
    level = Setup.RecordingDirs ? Level : -1;
-   isPluginReplay = true;
    Recordings.StateChanged(recordingsState); // just to get the current state
    helpKeys = -1;
    if (show)
@@ -39,7 +38,7 @@ cMyMenuRecordings::~cMyMenuRecordings()
 
 void cMyMenuRecordings::SetHelpKeys(void)
 {
-   cMyMenuRecordingItem *ri = (cMyMenuRecordingItem *)Get(Current());   
+   cMyMenuRecordingItem *ri = (cMyMenuRecordingItem *)Get(Current());
    int NewHelpKeys = 0;
    if (ri) {
       if (ri->IsDirectory())
@@ -112,7 +111,7 @@ void cMyMenuRecordings::Set(bool Refresh)
 
 cString cMyMenuRecordings::DirectoryName(void)
 {
-   cString d(VideoDirectory);
+   cString d(cVideoDirectory::Name());
    if (base) {
       char *s = ExchangeChars(strdup(base), true);
       d = AddDirectory(d, s);
@@ -137,17 +136,12 @@ bool cMyMenuRecordings::Open(bool OpenSubMenus)
    return false;
 }
 
-void cMyMenuRecordings::SetCurrent(cOsdItem *Item, bool IsPluginReplay)
+bool cMyMenuRecordings::Prepare(const cRecording *Recording)
 {
-   cOsdMenu::SetCurrent(Item);
-   isPluginReplay = IsPluginReplay;
-}
-
-bool cMyMenuRecordings::Prepare(cMyMenuRecordingItem *Ri)
-{
-   if (Ri->IsArchive()) {
+   const char *archiveId = cArchive::GetArchiveId(Recording);
+   if (strcmp(archiveId, "")) {
       char *msg = NULL;
-      asprintf(&msg, tr("Please attach archive-hdd %s"), Ri->ArchiveId());
+      asprintf(&msg, tr("Please attach archive-hdd %s"), archiveId);
       if (!Interface->Confirm(msg)) {
          free(msg);
          return false;
@@ -157,7 +151,7 @@ bool cMyMenuRecordings::Prepare(cMyMenuRecordingItem *Ri)
          Skins.Message(mtError, tr("Could not mount archive-hdd!"));
          return false;
       }
-      if (!cArchive::LinkArchive(Ri->Recording())) {
+      if (!cArchive::LinkArchive(Recording)) {
          Skins.Message(mtError, tr("Recording not found!"));
          cArchive::UnmountArchive();
          return false;
@@ -172,11 +166,18 @@ eOSState cMyMenuRecordings::Play(void)
    if (ri) {
       if (ri->IsDirectory())
          Open();
-      else if (Prepare(ri)) {
-         cMyReplayControl::SetRecording(ri->Recording()->FileName());
-         cControl::Launch(new cMyReplayControl(isPluginReplay));
+      else
+         return Play(ri->Recording(), true);
+   }
+   return osContinue;
+}
+
+eOSState cMyMenuRecordings::Play(const cRecording *Recording, bool IsPluginReplay)
+{
+   if (Prepare(Recording)) {
+         cMyReplayControl::SetRecording(Recording->FileName());
+         cControl::Launch(new cMyReplayControl(IsPluginReplay));
          return osEnd;
-      }
    }
    return osContinue;
 }
@@ -204,9 +205,12 @@ eOSState cMyMenuRecordings::Info(void)
 {
    if (HasSubMenu() || Count() == 0)
       return osContinue;
-   cMyMenuRecordingItem *ri = (cMyMenuRecordingItem *)Get(Current());
-   if (ri && !ri->IsDirectory() && ri->Recording()->Info()->Title())
-      return AddSubMenu(new cMenuRecording(ri->Recording(), true));
+   if (cMyMenuRecordingItem *ri = (cMyMenuRecordingItem *)Get(Current())) {
+      if (ri->IsDirectory())
+         return AddSubMenu(new cMenuPathEdit(cString(ri->Recording()->Name(), strchrn(ri->Recording()->Name(), FOLDERDELIMCHAR, ri->Level() + 1))));
+      else
+         return AddSubMenu(new cMenuRecording(ri->Recording(), true));
+   }
    return osContinue;
 }
 
@@ -253,22 +257,14 @@ eOSState cMyMenuRecordings::ProcessKey(eKeys Key)
    return state;
 }
 
-// --- cMyMenuRecordingItem -----------------------------------------------
+// --- cMyMenuRecordingItem ----------------------------------------------------
 
 cMyMenuRecordingItem::cMyMenuRecordingItem(cRecording *Recording, int Level) : recording(Recording), level(Level)
 {
    name = NULL;
-   archiveId = NULL;
-   uniqueFolder = NULL;
    totalEntries = newEntries = 0;
-   // get the archive-id
-   archiveId = strdup(cArchive::GetArchiveId(recording));
-   if (strcmp(archiveId, ""))
-      isArchive = true;
-   // get the unique folder name, like "2013-06-03.21.05.141-0.rec"
-   uniqueFolder = strdup(strrchr(recording->FileName(), '/') + 1);
-   //replace newindicator with '#' for archives
-   if (isArchive && (level < 0 || level == recording->HierarchyLevels())) {
+   // replace newindicator with '#' for archives
+   if (strcmp(cArchive::GetArchiveId(Recording), "") && (level < 0 || level == recording->HierarchyLevels())) {
       char *text = strdup(recording->Title('\t', true, level));
       int nipos = strlen(strrchr(recording->Title('\t', true, level), '\t') + 1);
       text[strlen(recording->Title('\t', true, level)) - nipos - 2] = '#';
@@ -284,8 +280,6 @@ cMyMenuRecordingItem::cMyMenuRecordingItem(cRecording *Recording, int Level) : r
 cMyMenuRecordingItem::~cMyMenuRecordingItem()
 {
    free(name);
-   free(archiveId);
-   free(uniqueFolder);
 }
 
 void cMyMenuRecordingItem::IncrementCounter(bool New)
@@ -302,7 +296,7 @@ void cMyMenuRecordingItem::SetMenuItem(cSkinDisplayMenu *DisplayMenu, int Index,
       DisplayMenu->SetItem(Text(), Index, Current, Selectable);
 }
 
-// --- cMyReplayControl ---------------------------------------------------
+// --- cMyReplayControl --------------------------------------------------------
 
 cMyReplayControl::cMyReplayControl(bool IsPluginReplay)
 : isPluginReplay(IsPluginReplay)

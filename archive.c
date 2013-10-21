@@ -10,7 +10,7 @@
 #include <vdr/videodir.h>
 #include "archive.h"
 
-// --- cArchive -----------------------------------------------------------
+// --- cArchive ----------------------------------------------------------------
 
 cString cArchive::archivePath = NULL;
 char cArchive::buf[8] = "";

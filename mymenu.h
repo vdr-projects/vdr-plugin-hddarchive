@@ -28,12 +28,11 @@ class cMyMenuRecordings : public cOsdMenu {
       bool show;
       int recordingsState;
       int helpKeys;
-      bool isPluginReplay;
       void SetHelpKeys(void);
       void Set(bool Refresh = false);
       cString DirectoryName(void);
       bool Open(bool OpenSubMenus = false);
-      bool Prepare(cMyMenuRecordingItem *Ri);
+      bool Prepare(const cRecording *Recording);
       eOSState Play(void);
       eOSState Rewind(void);
       eOSState Archive(void);
@@ -41,10 +40,10 @@ class cMyMenuRecordings : public cOsdMenu {
       eOSState Sort(void);
    public:
       cMyMenuRecordings(const char *Base = NULL, int Level = 0, bool OpenSubMenus = false, bool Show = true);
-      // when Show = false, the menu works in background wothout being displayed
+      // when Show = false, the menu works in background without being displayed
       virtual ~cMyMenuRecordings();
-      virtual void SetCurrent(cOsdItem *Item, bool IsPluginReplay = true);
       virtual eOSState ProcessKey(eKeys Key);
+      eOSState Play(const cRecording *Recording, bool IsPluginReplay = true);
 };
 
 class cMyMenuRecordingItem : public cOsdItem {
@@ -54,32 +53,26 @@ class cMyMenuRecordingItem : public cOsdItem {
       char *name;
       int totalEntries;
       int newEntries;
-      bool isArchive = false;
-      bool isMounted = false;
-      bool isLinked = false;
-      char *archiveId;
-      char *uniqueFolder;
    public:
       cMyMenuRecordingItem(cRecording *Recording, int Level);
       virtual ~cMyMenuRecordingItem();
       void IncrementCounter(bool New);
       virtual void SetMenuItem(cSkinDisplayMenu *DisplayMenu, int Index, bool Current, bool Selectable);
       const char *Name(void) { return name; }
+      int Level(void) { return level; }
       cRecording *Recording(void) { return recording; }
       bool IsDirectory(void) { return name != NULL; }
-      bool IsArchive(void) { return isArchive; }
-      bool IsMounted(void) { return isMounted; }
-      bool IsLinked(void) { return isLinked; }
-      const char *ArchiveId(void) { return archiveId; }
-      const char *UniqueFolder(void) { return uniqueFolder; }
 };
 
 class cMenuRecording : public cOsdMenu {
    private:
-      const cRecording *recording;
+      cRecording *recording;
+      cString originalFileName;
+      int recordingsState;
       bool withButtons;
+      bool RefreshRecording(void);
    public:
-      cMenuRecording(const cRecording *Recording, bool WithButtons = false);
+      cMenuRecording(cRecording *Recording, bool WithButtons = false);
       virtual void Display(void);
       virtual eOSState ProcessKey(eKeys Key);
 };
@@ -90,6 +83,21 @@ class cMyReplayControl : public cReplayControl {
    public:
       cMyReplayControl(bool IsPluginReplay = true);
       virtual ~cMyReplayControl();
+};
+
+class cMenuPathEdit : public cOsdMenu {
+   private:
+      cString path;
+      char folder[PATH_MAX];
+      char name[NAME_MAX];
+      cMenuEditStrItem *folderItem;
+      int pathIsInUse;
+      eOSState SetFolder(void);
+      eOSState Folder(void);
+      eOSState ApplyChanges(void);
+   public:
+      cMenuPathEdit(const char *Path);
+      virtual eOSState ProcessKey(eKeys Key);
 };
 
 #endif // __MYMENU_H

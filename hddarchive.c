@@ -115,7 +115,7 @@ struct Hddarchive_archiveid_v1_0
 
 struct Hddarchive_play_v1_0
 {
-   cMenuRecordingItem *item;
+   const cRecording *recording;
 };
 
 bool cPluginHddarchive::Service(const char *Id, void *Data)
@@ -128,14 +128,13 @@ bool cPluginHddarchive::Service(const char *Id, void *Data)
       archive->isarchive = strcmp(archive->archiveid, "") ? true : false;
       return true;
    }
-   
+
    if (!strcmp(Id, "Hddarchive-play_v1.0")) {
       if (Data == NULL)
          return false;
       Hddarchive_play_v1_0 *play = (Hddarchive_play_v1_0 *)Data;
       cMyMenuRecordings player(NULL, 0, false, false);
-      player.SetCurrent((cOsdItem *)play->item, false);
-      player.ProcessKey(kRed);
+      player.Play(play->recording, false);
       return true;
    }
    return false;

@@ -8,6 +8,8 @@
 
 #include "setup.h"
 
+// --- cHddArchiveConfig -------------------------------------------------------
+
 cHddArchiveConfig::cHddArchiveConfig()
 {
    strcpy(ArchiveDevice, "/dev/usb0");
@@ -28,6 +30,8 @@ bool cHddArchiveConfig::SetupParse(const char *Name, const char *Value)
      return false;
   return true;
 }
+
+// --- cHddArchiveSetup --------------------------------------------------------
 
 cHddArchiveSetup::cHddArchiveSetup()
 {

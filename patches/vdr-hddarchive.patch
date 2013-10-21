@@ -1,6 +1,6 @@
---- vdr-2.1.1-orig/menu.c	2013-08-21 12:45:11.000000000 +0200
-+++ vdr-2.1.1/menu.c	2013-09-20 15:33:04.629102337 +0200
-@@ -51,6 +51,18 @@
+--- menu.c.orig	2013-10-16 11:15:36.000000000 +0200
++++ menu.c	2013-10-21 16:09:59.030298758 +0200
+@@ -50,6 +50,18 @@
  #define CHNUMWIDTH  (numdigits(Channels.MaxNumber()) + 1)
  #define CHNAMWIDTH  (min(MAXCHNAMWIDTH, Channels.MaxShortChannelNameLength() + 1))
  
@@ -13,19 +13,44 @@
 +
 +struct Hddarchive_play_v1_0
 +{
-+   cMenuRecordingItem *item;
++   const cRecording *recording;
 +};
 +
  // --- cMenuEditCaItem -------------------------------------------------------
  
  class cMenuEditCaItem : public cMenuEditIntItem {
-@@ -2348,6 +2360,13 @@
+@@ -2522,7 +2534,23 @@
+   level = Level;
+   name = NULL;
+   totalEntries = newEntries = 0;
+-  SetText(Recording->Title('\t', true, Level));
++   // replace newindicator with '#' for archives
++  cPlugin *hddarchivePlugin = cPluginManager::GetPlugin("hddarchive");
++  Hddarchive_archiveid_v1_0 data;
++  data.recording = Recording;
++  data.isarchive = false;
++  if (hddarchivePlugin) {
++     hddarchivePlugin->Service("Hddarchive-archiveid_v1.0", &data);
++     }
++  if (data.isarchive && (level < 0 || level == recording->HierarchyLevels())) {
++     char *text = strdup(recording->Title('\t', true, level));
++     int nipos = strlen(strrchr(recording->Title('\t', true, level), '\t') + 1);
++     text[strlen(recording->Title('\t', true, level)) - nipos - 2] = '#';
++     SetText(text); 
++     free(text);
++     }
++  else
++     SetText(Recording->Title('\t', true, Level));
+   if (*Text() == '\t')
+      name = strdup(Text() + 2); // 'Text() + 2' to skip the two '\t'
+ }
+@@ -2693,6 +2721,13 @@
       if (ri->IsDirectory())
          Open();
       else {
 +        cPlugin *hddarchivePlugin = cPluginManager::GetPlugin("hddarchive");
 +        Hddarchive_play_v1_0 data;
-+        data.item = ri;
++        data.recording = ri->Recording();
 +        if (hddarchivePlugin) {
 +           hddarchivePlugin->Service("Hddarchive-play_v1.0", &data);
 +           return osEnd;
@@ -33,7 +58,7 @@
          cReplayControl::SetRecording(ri->Recording()->FileName());
          return osReplay;
          }
-@@ -2374,6 +2393,17 @@
+@@ -2719,6 +2754,17 @@
    if (HasSubMenu() || Count() == 0)
       return osContinue;
    cMenuRecordingItem *ri = (cMenuRecordingItem *)Get(Current());
@@ -51,10 +76,10 @@
    if (ri && !ri->IsDirectory()) {
       if (Interface->Confirm(tr("Delete recording?"))) {
          cRecordControl *rc = cRecordControls::GetRecordControl(ri->Recording()->FileName());
-@@ -4854,7 +4884,16 @@
+@@ -5213,7 +5302,16 @@
    if (*fileName) {
       Hide();
-      if (!cCutter::Active()) {
+      if (!RecordingsHandler.GetUsage(fileName)) {
 -        if (!marks.Count())
 +        cPlugin *hddarchivePlugin = cPluginManager::GetPlugin("hddarchive");
 +        Hddarchive_archiveid_v1_0 data;

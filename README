@@ -13,7 +13,7 @@ the Free Software Foundation; either version 2 of the License, or
 See the file COPYING for more information.
 
 Requirements
-- VDR version >= 1.7.34
+- VDR version >= 2.1.2
 
 - Optional patch to integrate into VDRs original recmenu
 

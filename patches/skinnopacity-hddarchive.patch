@@ -1,0 +1,74 @@
+--- menuitem.c	2013-10-19 19:59:29.867915217 +0200
++++ menuitem.c	2013-10-19 19:56:14.335920540 +0200
+@@ -1,4 +1,5 @@
+ #include "menuitem.h"
++#include "services/hddarchive.h"
+ #include <string>
+ #include <sstream>
+ #include <algorithm>
+@@ -1154,7 +1155,6 @@
+ 
+ void cNopacityRecordingMenuItem::DrawRecordingNewIcon(void) {
+     int iconNewSize = height/3;
+-    
+     cImage *imgIcon = imgCache->GetSkinIcon("skinIcons/newrecording", iconNewSize, iconNewSize);
+     if (imgIcon) {
+         int iconX = pixmapIcon->ViewPort().Width() - iconNewSize;
+@@ -1175,6 +1175,16 @@
+     }
+ }
+ 
++void cNopacityRecordingMenuItem::DrawRecordingArchiveIcon(void) {
++    int iconArchiveSize = height/3;
++    cImage *imgIcon = imgCache->GetSkinIcon("skinIcons/archive", iconArchiveSize, iconArchiveSize);
++    if (imgIcon) {
++        int iconX = pixmapIcon->ViewPort().Width() - iconArchiveSize;
++        int iconY = height/2;
++        pixmapIcon->DrawImage(cPoint(iconX, iconY), *imgIcon);
++    }
++}
++
+ void cNopacityRecordingMenuItem::DrawFolderIcon(void) {
+     cImage *imgIcon = imgCache->GetSkinIcon("skinIcons/recfolder", posterWidth, posterHeight);
+     if (imgIcon) {
+@@ -1243,9 +1253,19 @@
+             DrawFolderNewSeen();
+             SetTextShort();
+         } else {
++            cPlugin *hddarchivePlugin = cPluginManager::GetPlugin("hddarchive");
++            Hddarchive_archiveid_v1_0 data;
++            data.recording = Recording;
++            data.isarchive = false;
++            if (hddarchivePlugin) {
++               hddarchivePlugin->Service("Hddarchive-archiveid_v1.0", &data);
++            }
+             DrawPoster();
+             DrawRecDateTime();
+-            if (Recording->IsNew()) {
++            if (data.isarchive) {
++                DrawRecordingArchiveIcon();
++            }
++            else if (Recording->IsNew()) {
+                 DrawRecordingNewIcon();
+             }
+             if (Recording->IsEdited()) {
+--- menuitem.h	2013-10-19 19:59:29.867915217 +0200
++++ menuitem.h	2013-10-19 19:56:14.335920540 +0200
+@@ -173,6 +173,7 @@
+     void SetTextShortRecording(void);
+     void DrawBackground(void);
+     void DrawRecordingNewIcon(void);
++    void DrawRecordingArchiveIcon(void);
+     void DrawRecordingEditedIcon(void);
+     void DrawFolderIcon(void);
+     void DrawRecDateTime(void);
+--- services/hddarchive.h	1970-01-01 01:00:00.000000000 +0100
++++ services/hddarchive.h	2013-10-19 19:46:57.000000000 +0200
+@@ -0,0 +1,7 @@
++struct Hddarchive_archiveid_v1_0
++{
++   const cRecording *recording;
++   bool isarchive;
++   char *archiveid;
++};
++
