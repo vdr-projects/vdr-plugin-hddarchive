@@ -111,7 +111,11 @@ void cMyMenuRecordings::Set(bool Refresh)
 
 cString cMyMenuRecordings::DirectoryName(void)
 {
+#if APIVERSNUM > 20101
    cString d(cVideoDirectory::Name());
+#else
+   cString d(VideoDirectory);
+#endif
    if (base) {
       char *s = ExchangeChars(strdup(base), true);
       d = AddDirectory(d, s);
