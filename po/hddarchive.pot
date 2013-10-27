@@ -1,7 +1,7 @@
-# VDR plugin language source file.
+# Translation template.
 # Copyright (C) 2013
 # This file is distributed under the same license as the hddarchive package.
-#
+# Thomas Maass <mase@setho.org>, 2013.
 #
 #, fuzzy
 msgid ""
@@ -10,67 +10,67 @@ msgstr ""
 "Report-Msgid-Bugs-To: <see README>\n"
 "POT-Creation-Date: 2013-10-27 11:35+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Thomas Maass <mase@setho.org>\n"
-"Language-Team: \n"
-"Language: de\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 msgid "HDD-Archive"
-msgstr "HDD-Archiv"
+msgstr ""
 
 msgid "Button$Open"
-msgstr "Öffnen"
+msgstr ""
 
 msgid "Button$Edit"
-msgstr "Editieren"
+msgstr ""
 
 msgid "Commands"
-msgstr "Befehle"
+msgstr ""
 
 msgid "Button$Play"
-msgstr "Wiedergabe"
+msgstr ""
 
 msgid "Button$Archive"
-msgstr "Archiv"
+msgstr ""
 
 msgid "Button$Delete"
-msgstr "Löschen"
+msgstr ""
 
 msgid "Button$Info"
-msgstr "Info"
+msgstr ""
 
 #, c-format
 msgid "Please attach archive-hdd %s"
-msgstr "Bitte Archiv-HDD %s anschliessen"
+msgstr ""
 
 msgid "Could not mount archive-hdd!"
-msgstr "Konnte Archiv-HDD nicht mounten!"
+msgstr ""
 
 msgid "Recording not found!"
-msgstr "Aufzeichnung nicht gefunden!"
+msgstr ""
 
 msgid "Cannot delete archived recording!"
-msgstr "Kann keine archivierte Aufzeichnung löschen!"
+msgstr ""
 
 msgid "Delete recording?"
-msgstr "Aufzeichnung löschen?"
+msgstr ""
 
 msgid "Timer still recording - really delete?"
-msgstr "Timer zeichnet auf - trotzdem löschen?"
+msgstr ""
 
 msgid "Recording is being edited - really delete?"
-msgstr "Aufzeichnung wird geschnitten - trotzdem löschen?"
+msgstr ""
 
 msgid "Error while deleting recording!"
-msgstr "Fehler beim Löschen der Aufzeichnung!"
+msgstr ""
 
 msgid "Recording commands"
-msgstr "Befehle für Aufzeichnungen"
+msgstr ""
 
 msgid "Archive device"
-msgstr "Archiv Gerät"
+msgstr ""
 
 msgid "Archive mountpoint"
-msgstr "Archiv Mountpunkt"
+msgstr ""
