@@ -34,9 +34,10 @@ class cMyMenuRecordings : public cOsdMenu {
       bool Open(bool OpenSubMenus = false);
       bool Prepare(const cRecording *Recording);
       eOSState Play(void);
-      eOSState Rewind(void);
       eOSState Archive(void);
+      eOSState Delete(void);
       eOSState Info(void);
+      eOSState Commands(eKeys Key = kNone);
       eOSState Sort(void);
    public:
       cMyMenuRecordings(const char *Base = NULL, int Level = 0, bool OpenSubMenus = false, bool Show = true);

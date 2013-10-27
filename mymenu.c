@@ -43,20 +43,14 @@ void cMyMenuRecordings::SetHelpKeys(void)
    if (ri) {
       if (ri->IsDirectory())
          NewHelpKeys = 1;
-      else {
+      else
          NewHelpKeys = 2;
-      if (ri->Recording()->Info()->Title())
-         NewHelpKeys = 3;
-      }
    }
    if (NewHelpKeys != helpKeys) {
       switch (NewHelpKeys) {
-         case 0:  SetHelp(NULL);
-                  break;
-         case 1:  SetHelp(tr("Button$Open"));
-                  break;
-         case 2:
-         case 3:  SetHelp(tr("Button$Play"), tr("Button$Rewind"), tr("Button$Archive"), NewHelpKeys == 3 ? tr("Button$Info") : NULL);
+         case 0: SetHelp(NULL); break;
+         case 1: SetHelp(tr("Button$Open"), NULL, NULL, tr("Button$Edit")); break;
+         case 2: SetHelp(RecordingCommands.Count() ? tr("Commands") : tr("Button$Play"), tr("Button$Archive"), tr("Button$Delete"), tr("Button$Info"));
          default: ;
       }
       helpKeys = NewHelpKeys;
@@ -186,22 +180,68 @@ eOSState cMyMenuRecordings::Play(const cRecording *Recording, bool IsPluginRepla
    return osContinue;
 }
 
-eOSState cMyMenuRecordings::Rewind(void)
+eOSState cMyMenuRecordings::Archive(void)
+{
+   return osContinue;
+}
+
+eOSState cMyMenuRecordings::Delete(void)
 {
    if (HasSubMenu() || Count() == 0)
       return osContinue;
    cMyMenuRecordingItem *ri = (cMyMenuRecordingItem *)Get(Current());
-   if (ri && !ri->IsDirectory()) {
-      cDevice::PrimaryDevice()->StopReplay(); // must do this first to be able to rewind the currently replayed recording
-      cResumeFile ResumeFile(ri->Recording()->FileName(), ri->Recording()->IsPesRecording());
-      ResumeFile.Delete();
-      return Play();
+   const char *archiveId = cArchive::GetArchiveId(ri->Recording());
+   if (strcmp(archiveId, "")) {
+      Skins.Message(mtError, tr("Cannot delete archived recording!"));
+      return osContinue;
    }
-   return osContinue;
-}
-
-eOSState cMyMenuRecordings::Archive(void)
-{
+   if (ri && !ri->IsDirectory()) {
+      if (Interface->Confirm(tr("Delete recording?"))) {
+         cRecordControl *rc = cRecordControls::GetRecordControl(ri->Recording()->FileName());
+         if (rc) {
+            if (Interface->Confirm(tr("Timer still recording - really delete?"))) {
+               cTimer *timer = rc->Timer();
+               if (timer) {
+                  timer->Skip();
+                  cRecordControls::Process(time(NULL));
+                  if (timer->IsSingleEvent()) {
+                     isyslog("deleting timer %s", *timer->ToDescr());
+                     Timers.Del(timer);
+                  }
+                  Timers.SetModified();
+               }
+            }
+            else
+               return osContinue;
+         }
+         cRecording *recording = ri->Recording();
+         cString FileName = recording->FileName();
+         if (RecordingsHandler.GetUsage(FileName)) {
+            if (Interface->Confirm(tr("Recording is being edited - really delete?"))) {
+               RecordingsHandler.Del(FileName);
+               recording = Recordings.GetByName(FileName); // RecordingsHandler.Del() might have deleted it if it was the edited version
+               // we continue with the code below even if recording is NULL,
+               // in order to have the menu updated etc.
+            }
+            else
+               return osContinue;
+         }
+         if (cReplayControl::NowReplaying() && strcmp(cReplayControl::NowReplaying(), FileName) == 0)
+            cControl::Shutdown();
+         if (!recording || recording->Delete()) {
+            cReplayControl::ClearLastReplayed(FileName);
+            Recordings.DelByName(FileName);
+            cOsdMenu::Del(Current());
+            SetHelpKeys();
+            cVideoDiskUsage::ForceCheck();
+            Display();
+            if (!Count())
+               return osBack;
+         }
+         else
+            Skins.Message(mtError, tr("Error while deleting recording!"));
+      }
+   }
    return osContinue;
 }
 
@@ -214,6 +254,21 @@ eOSState cMyMenuRecordings::Info(void)
          return AddSubMenu(new cMenuPathEdit(cString(ri->Recording()->Name(), strchrn(ri->Recording()->Name(), FOLDERDELIMCHAR, ri->Level() + 1))));
       else
          return AddSubMenu(new cMenuRecording(ri->Recording(), true));
+   }
+   return osContinue;
+}
+
+eOSState cMyMenuRecordings::Commands(eKeys Key)
+{
+   if (HasSubMenu() || Count() == 0)
+      return osContinue;
+   cMyMenuRecordingItem *ri = (cMyMenuRecordingItem *)Get(Current());
+   if (ri && !ri->IsDirectory()) {
+      cMenuCommands *menu;
+      eOSState state = AddSubMenu(menu = new cMenuCommands(tr("Recording commands"), &RecordingCommands, cString::sprintf("\"%s\"", *strescape(ri->Recording()->FileName(), "\\\"$"))));
+      if (Key != kNone)
+         state = menu->ProcessKey(Key);
+      return state;
    }
    return osContinue;
 }
@@ -236,12 +291,13 @@ eOSState cMyMenuRecordings::ProcessKey(eKeys Key)
          case kPlayPause:
          case kPlay:
          case kOk:
+	    return Play();
          case kRed:
-            return Play();
+            return (helpKeys > 1 && RecordingCommands.Count()) ? Commands() : Play();
          case kGreen:
-            return Rewind();
-         case kYellow:
             return Archive();
+         case kYellow:
+            return Delete();
          case kInfo:
          case kBlue:
             return Info();

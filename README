@@ -15,7 +15,7 @@ See the file COPYING for more information.
 
 
 Requirements
-- VDR version >= 2.1.2
+- VDR version >= 2.0.0
 
 - Optional patch to integrate into VDRs original recmenu
 
