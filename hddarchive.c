@@ -11,8 +11,8 @@
 #include "mymenu.h"
 
 static const char *VERSION        = "0.0.1";
-static const char *DESCRIPTION    = "Archive HDD functions";
-static const char *MAINMENUENTRY  = "HDD-Archive";
+static const char *DESCRIPTION    = trNOOP("HDD-Archive functions");
+static const char *MAINMENUENTRY  = trNOOP("HDD-Archive");
 cHddArchiveConfig HddArchiveConfig;
 
 class cPluginHddarchive : public cPlugin {
@@ -21,7 +21,7 @@ class cPluginHddarchive : public cPlugin {
       cPluginHddarchive(void);
       virtual ~cPluginHddarchive();
       virtual const char *Version(void) { return VERSION; }
-      virtual const char *Description(void) { return DESCRIPTION; }
+      virtual const char *Description(void) { return tr(DESCRIPTION); }
       virtual const char *CommandLineHelp(void);
       virtual bool ProcessArgs(int argc, char *argv[]);
       virtual bool Initialize(void);
@@ -31,7 +31,7 @@ class cPluginHddarchive : public cPlugin {
       virtual void MainThreadHook(void);
       virtual cString Active(void);
       virtual time_t WakeupTime(void);
-      virtual const char *MainMenuEntry(void) { return MAINMENUENTRY; }
+      virtual const char *MainMenuEntry(void) { return tr(MAINMENUENTRY); }
       virtual cOsdObject *MainMenuAction(void);
       virtual cMenuSetupPage *SetupMenu(void);
       virtual bool SetupParse(const char *Name, const char *Value);
@@ -42,7 +42,6 @@ class cPluginHddarchive : public cPlugin {
 
 cPluginHddarchive::cPluginHddarchive(void)
 {
-
 }
 
 cPluginHddarchive::~cPluginHddarchive()
