@@ -22,7 +22,7 @@ Requirements
 
 
 Description:
-This plugin brings the archive-hdd functionality to VDR.
+This plugin brings the hdd-archive functionality to VDR.
 
 
 
@@ -41,7 +41,7 @@ a recording. Change the mountpoint inside and use it with vdr-bg.sh or at:
 
 Archive?: /usr/local/bin/vdr-bg.sh /usr/local/bin/vdr_move_to_hdd.sh
 
-Make sure, that the vdr user has permissions to mount the archive-disk. Setup
+Make sure, that the VDR user has permissions to mount the archive-disk. Setup
 /etc/fstab like this. The mountpoint must match with the plugin setup.
 
 /dev/sdb1 /media/archive-hdd auto defaults,user,noauto 0 0
@@ -93,3 +93,14 @@ data.recording = Recording;
 if (hddarchivePlugin) {
    hddarchivePlugin->Service("Hddarchive-play_v1.0", &data);
 }
+
+
+
+How it works:
+When archiving, the video files are moved to the archive disk, index and info is copied.
+So the recording stays in the recmenu of VDR, but it doesn't take much space. A file "hdd"
+is also copied from the archive disk to the recdir. It holds the archive-id and marks the
+recording as an archive.
+When playing such a recording, the user is prompted to insert the archive disk with the
+Id. Then the disk gets mounted, and the files on it are symlinked to the recdir. Then playing
+starts. After playing, the symlinks get removed again. The disk gets unmounted after all.
