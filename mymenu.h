@@ -67,13 +67,21 @@ class cMyMenuRecordingItem : public cOsdItem {
 
 class cMenuRecording : public cOsdMenu {
    private:
+#if APIVERSNUM > 20101
       cRecording *recording;
       cString originalFileName;
       int recordingsState;
-      bool withButtons;
       bool RefreshRecording(void);
+#else
+      cRecording *recording;
+#endif
+      bool withButtons;
    public:
+#if APIVERSNUM > 20101
       cMenuRecording(cRecording *Recording, bool WithButtons = false);
+#else
+      cMenuRecording(const cRecording *Recording, bool WithButtons = false);
+#endif
       virtual void Display(void);
       virtual eOSState ProcessKey(eKeys Key);
 };

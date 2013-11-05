@@ -216,9 +216,17 @@ eOSState cMyMenuRecordings::Delete(void)
          }
          cRecording *recording = ri->Recording();
          cString FileName = recording->FileName();
+#if APIVERSNUM > 20101
          if (RecordingsHandler.GetUsage(FileName)) {
+#else
+	    if (cCutter::Active(ri->Recording()->FileName())) {
+#endif
             if (Interface->Confirm(tr("Recording is being edited - really delete?"))) {
+#if APIVERSNUM > 20101
                RecordingsHandler.Del(FileName);
+#else
+	       cCutter::Stop();
+#endif
                recording = Recordings.GetByName(FileName); // RecordingsHandler.Del() might have deleted it if it was the edited version
                // we continue with the code below even if recording is NULL,
                // in order to have the menu updated etc.
@@ -249,12 +257,18 @@ eOSState cMyMenuRecordings::Info(void)
 {
    if (HasSubMenu() || Count() == 0)
       return osContinue;
+#if APIVERSNUM > 20101
    if (cMyMenuRecordingItem *ri = (cMyMenuRecordingItem *)Get(Current())) {
       if (ri->IsDirectory())
          return AddSubMenu(new cMenuPathEdit(cString(ri->Recording()->Name(), strchrn(ri->Recording()->Name(), FOLDERDELIMCHAR, ri->Level() + 1))));
       else
          return AddSubMenu(new cMenuRecording(ri->Recording(), true));
    }
+#else
+   cMyMenuRecordingItem *ri = (cMyMenuRecordingItem *)Get(Current());
+   if (ri && !ri->IsDirectory() && ri->Recording()->Info()->Title())
+      return AddSubMenu(new cMenuRecording(ri->Recording(), true));
+#endif
    return osContinue;
 }
 
