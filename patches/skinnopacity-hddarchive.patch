@@ -15,9 +15,9 @@
 +
 +    cImage *imgIcon = imgCache->GetSkinIcon("skinIcons/archive", iconArchiveSize, iconArchiveSize);
 +    if (imgIcon) {
-+        int iconX = pixmapIcon->ViewPort().Width() - iconArchiveSize;
++        int iconX = pixmapStatic->ViewPort().Width() - iconArchiveSize;
 +        int iconY = height/2;
-+        pixmapIcon->DrawImage(cPoint(iconX, iconY), *imgIcon);
++        pixmapStatic->DrawImage(cPoint(iconX, iconY), *imgIcon);
 +    }
 +}
 +
