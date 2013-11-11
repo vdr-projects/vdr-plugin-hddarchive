@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vdr-hddarchive 0.0.1\n"
 "Report-Msgid-Bugs-To: <see README>\n"
-"POT-Creation-Date: 2013-10-28 15:28+0100\n"
+"POT-Creation-Date: 2013-11-11 16:00+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Thomas Maass <mase@setho.org>\n"
 "Language-Team: \n"
@@ -71,6 +71,12 @@ msgstr "Fehler beim Löschen der Aufzeichnung!"
 
 msgid "Recording commands"
 msgstr "Befehle für Aufzeichnungen"
+
+msgid "Hide main menu entry"
+msgstr "Hauptmenüeintrag ausblenden"
+
+msgid "Replace original recmenu"
+msgstr "Originales Aufzeichnungsmenü ersetzen"
 
 msgid "Archive device"
 msgstr "Archiv Gerät"

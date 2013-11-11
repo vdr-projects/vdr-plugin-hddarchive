@@ -17,6 +17,8 @@ class cHddArchiveConfig
       cHddArchiveConfig();
       ~cHddArchiveConfig();
       bool SetupParse(const char *Name, const char *Value);
+      int HideMainmenuEntry;
+      int ReplaceRecmenu;
       char ArchiveDevice[NAME_MAX + 1];
       char ArchiveMountpoint[NAME_MAX + 1];
 };
@@ -26,6 +28,8 @@ class cHddArchiveSetup : public cMenuSetupPage
    public:
       cHddArchiveSetup();
       virtual ~cHddArchiveSetup();
+      int HideMainmenuEntry;
+      int ReplaceRecmenu;
       char ArchiveDevice[NAME_MAX + 1];
       char ArchiveMountpoint[NAME_MAX + 1];
    private:

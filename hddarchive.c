@@ -31,7 +31,7 @@ class cPluginHddarchive : public cPlugin {
       virtual void MainThreadHook(void);
       virtual cString Active(void);
       virtual time_t WakeupTime(void);
-      virtual const char *MainMenuEntry(void) { return tr(MAINMENUENTRY); }
+      virtual const char *MainMenuEntry(void) { return HddArchiveConfig.HideMainmenuEntry ? NULL : MAINMENUENTRY; }
       virtual cOsdObject *MainMenuAction(void);
       virtual cMenuSetupPage *SetupMenu(void);
       virtual bool SetupParse(const char *Name, const char *Value);
@@ -119,6 +119,19 @@ struct Hddarchive_play_v1_0
 
 bool cPluginHddarchive::Service(const char *Id, void *Data)
 {
+   if (!Id)
+      return false;
+
+   if (HddArchiveConfig.ReplaceRecmenu && !strcmp(Id, "MainMenuHooksPatch-v1.0::osRecordings"))
+   {
+   if (!Data)
+      return true;
+   cOsdMenu **menu = (cOsdMenu**)Data;
+   if (menu)
+      *menu = (cOsdMenu*)MainMenuAction();
+   return true;
+   }
+
    if (!strcmp(Id, "Hddarchive-archiveid_v1.0")) {
       if (Data == NULL)
          return true;
