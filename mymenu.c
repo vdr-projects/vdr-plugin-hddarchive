@@ -10,8 +10,10 @@
 
 // --- cMyMenuRecordings -------------------------------------------------------
 
+#if APIVERSNUM > 20101
 cString cMyMenuRecordings::path;
 cString cMyMenuRecordings::fileName;
+#endif
 
 cMyMenuRecordings::cMyMenuRecordings(const char *Base, int Level, bool OpenSubMenus, bool Show)
 :cOsdMenu(Base ? Base : tr("HDD-Archive"), 9, 6, 6), show(Show)
@@ -26,12 +28,17 @@ cMyMenuRecordings::cMyMenuRecordings(const char *Base, int Level, bool OpenSubMe
    Set();
    if (Current() < 0)
       SetCurrent(First());
+#if APIVERSNUM > 20101
    else if (OpenSubMenus && (cReplayControl::LastReplayed() || *path || *fileName)) {
       if (!*path || Level < strcountchr(path, FOLDERDELIMCHAR)) {
          if (Open(true))
             return;
       }
    }
+#else
+    else if (OpenSubMenus && cReplayControl::LastReplayed() && Open(true))
+       return;
+#endif
    Display();
    SetHelpKeys();
 }
@@ -332,6 +339,7 @@ eOSState cMyMenuRecordings::ProcessKey(eKeys Key)
          default: break;
       }
    }
+#if APIVERSNUM > 20101
    else if (state == osUser1) {
       // a recording or path was renamed, so let's refresh the menu
       CloseSubMenu(false);
@@ -343,6 +351,7 @@ eOSState cMyMenuRecordings::ProcessKey(eKeys Key)
       path = NULL;
       fileName = NULL;
       }
+#endif
    if (Key == kYellow && HadSubMenu && !HasSubMenu()) {
       // the last recording in a subdirectory was deleted, so let's go back up
       cOsdMenu::Del(Current());
