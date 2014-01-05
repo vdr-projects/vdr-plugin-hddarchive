@@ -28,6 +28,8 @@ class cMyMenuRecordings : public cOsdMenu {
       bool show;
       int recordingsState;
       int helpKeys;
+      static cString path;
+      static cString fileName;
       void SetHelpKeys(void);
       void Set(bool Refresh = false);
       cString DirectoryName(void);

@@ -10,8 +10,11 @@
 
 // --- cMyMenuRecordings -------------------------------------------------------
 
+cString cMyMenuRecordings::path;
+cString cMyMenuRecordings::fileName;
+
 cMyMenuRecordings::cMyMenuRecordings(const char *Base, int Level, bool OpenSubMenus, bool Show)
-: cOsdMenu(Base ? Base : tr("HDD-Archive"), 9, 6, 6), show(Show)
+:cOsdMenu(Base ? Base : tr("HDD-Archive"), 9, 6, 6), show(Show)
 {
    SetMenuCategory(mcRecording);
    base = Base ? strdup(Base) : NULL;
@@ -23,10 +26,13 @@ cMyMenuRecordings::cMyMenuRecordings(const char *Base, int Level, bool OpenSubMe
    Set();
    if (Current() < 0)
       SetCurrent(First());
-   else if (OpenSubMenus && cMyReplayControl::LastReplayed() && Open(true))
-      return;
-   if (show)
-      Display();
+   else if (OpenSubMenus && (cReplayControl::LastReplayed() || *path || *fileName)) {
+      if (!*path || Level < strcountchr(path, FOLDERDELIMCHAR)) {
+         if (Open(true))
+            return;
+      }
+   }
+   Display();
    SetHelpKeys();
 }
 
@@ -71,7 +77,7 @@ void cMyMenuRecordings::Set(bool Refresh)
    GetRecordingsSortMode(DirectoryName());
    Recordings.Sort();
    for (cRecording *recording = Recordings.First(); recording; recording = Recordings.Next(recording)) {
-      if (!base || (strstr(recording->Name(), base) == recording->Name() && recording->Name()[strlen(base)] == FOLDERDELIMCHAR)) {
+      if ((!base || (strstr(recording->Name(), base) == recording->Name() && recording->Name()[strlen(base)] == FOLDERDELIMCHAR))) {
          cMyMenuRecordingItem *Item = new cMyMenuRecordingItem(recording, level);
          cMyMenuRecordingItem *LastDir = NULL;
          if (Item->IsDirectory()) {
@@ -305,7 +311,7 @@ eOSState cMyMenuRecordings::ProcessKey(eKeys Key)
          case kPlayPause:
          case kPlay:
          case kOk:
-	    return Play();
+            return Play();
          case kRed:
             return (helpKeys > 1 && RecordingCommands.Count()) ? Commands() : Play();
          case kGreen:
@@ -317,6 +323,8 @@ eOSState cMyMenuRecordings::ProcessKey(eKeys Key)
             return Info();
          case k0:
             return Sort();
+         case k1...k9:
+            return Commands(Key);
          case kNone:
             if (Recordings.StateChanged(recordingsState))
                Set(true);
@@ -324,6 +332,24 @@ eOSState cMyMenuRecordings::ProcessKey(eKeys Key)
          default: break;
       }
    }
+   else if (state == osUser1) {
+      // a recording or path was renamed, so let's refresh the menu
+      CloseSubMenu(false);
+      if (base)
+         return state; // closes all recording menus except for the top one
+      Set(); // this is the top level menu, so we refresh it...
+      Open(true); // ...and open any necessary submenus to show the new name
+      Display();
+      path = NULL;
+      fileName = NULL;
+      }
+   if (Key == kYellow && HadSubMenu && !HasSubMenu()) {
+      // the last recording in a subdirectory was deleted, so let's go back up
+      cOsdMenu::Del(Current());
+      if (!Count())
+         return osBack;
+      Display();
+      }
    if (!HasSubMenu()) {
       if (Key != kNone)
          SetHelpKeys();
